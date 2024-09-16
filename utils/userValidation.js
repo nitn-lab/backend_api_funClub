@@ -12,7 +12,10 @@ const userRegisterValidate = (req, res, next) => {
     gender: Joi.string(),
     password: Joi.string(),
     confirm_password: Joi.string(),
-    height: Joi.string(),
+    heightCm: Joi.string(),
+    heightFeet: Joi.number(),
+    heightInches: Joi.number(),
+    heightUnit: Joi.string(),
     religion: Joi.string(),
     zodiac: Joi.string(),
     qualification: Joi.string(),
@@ -27,8 +30,8 @@ const userRegisterValidate = (req, res, next) => {
     exercise: Joi.string(),
     sexual_orientation: Joi.string(),
     personality: Joi.string(),
-    interest_details: Joi.string(),
-    looking_for: Joi.string(),
+    interest_details: Joi.array(),
+    looking_for: Joi.array(),
     prompt_question: Joi.string(),
   });
   const { error, value } = schema.validate(req.body);
@@ -79,5 +82,5 @@ module.exports = {
   userRegisterValidate,
   userLoginValidate,
   adminRegisterValidator,
-  adminLoginValidate
+  adminLoginValidate,
 };
