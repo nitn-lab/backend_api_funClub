@@ -1,12 +1,13 @@
 // Creating the server using express
 const express = require("express");
-
+var cors = require('cors')
 const app = express();
+
 const routes = require("./routes/index");
 const bodyParser = require("body-parser");
 // require("dotenv").config();
 require("./config/DataBase");
-
+app.use(cors());
 app.use(bodyParser.json());
 app.use("/api/v1", routes); //! USING API VERSION - 1
 
