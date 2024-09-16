@@ -8,7 +8,9 @@ const {
   registerAdmin,
   loginAdmin,
   getAdmin,
-  forgetPassword
+  forgetPassword,
+  getAdminById,
+  getUserById
 } = require("../controllers/index");
 const {
   userRegisterValidate,
@@ -27,6 +29,8 @@ routes.post("/login", userLoginValidate, loginUser);
 
 routes.get("/users", ensureAuthenticated, getUsers);
 
+routes.get("/userById/:id", ensureAuthenticated, getUserById)
+
 //**ADMIN ROUTES */
 
 routes.post("/adminRegister", adminRegisterValidator, registerAdmin);
@@ -34,6 +38,8 @@ routes.post("/adminRegister", adminRegisterValidator, registerAdmin);
 routes.post("/adminLogin", adminLoginValidate, loginAdmin);
 
 routes.get("/admins", ensureAuthenticated, getAdmin);
+
+routes.get("/adminById/:id", ensureAuthenticated, getAdminById);
 
 //** COMMOM ROUTE */
 

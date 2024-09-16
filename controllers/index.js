@@ -4,6 +4,7 @@ const AdminSchema = require("../models/adminModel");
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 const adminModel = require("../models/adminModel");
+const { request } = require("express");
 module.exports = {
   // validate req.body - Done
   // create MongoDB UserModel - Done
@@ -125,6 +126,7 @@ module.exports = {
     }
   },
 
+  // FORGET PASSWORD
   forgetPassword: async (req, res) => {
     //first check if user exists in database
     try {
@@ -154,6 +156,36 @@ module.exports = {
           .status(201)
           .json({ message: "admin password reset success", data: response });
       }
+    } catch (error) {
+      return res.status(500).json({ message: "error", err });
+    }
+  },
+
+  // GET ADMIN BY ID
+  getAdminById: async (req, res) => {
+    try {
+      const admin = await adminModel
+        .findOne({
+          _id: new Object(req.params.id),
+        })
+        .select({ password: 0 });
+      // console.log("adminId", admin);
+      return res.status(200).json({ data: admin });
+    } catch (error) {
+      return res.status(500).json({ message: "error", err });
+    }
+  },
+
+  // GET USER BY ID
+  getUserById: async (req, res) => {
+    try {
+      const user = await UserModel
+        .findOne({
+          _id: new Object(req.params.id),
+        })
+        .select({ password: 0 });
+      // console.log("adminId", admin);
+      return res.status(200).json({ data: user });
     } catch (error) {
       return res.status(500).json({ message: "error", err });
     }
