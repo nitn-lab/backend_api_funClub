@@ -28,6 +28,12 @@ const UserSchema = new mongoose.Schema(
       // enum: ['Male', 'Female', 'Other'],
       // default: 'Other'
     },
+    role: {
+      type: String,
+    },
+    active: {
+      type: Boolean,
+    },
     password: {
       type: String,
       // required: true,

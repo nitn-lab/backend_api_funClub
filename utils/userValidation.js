@@ -10,6 +10,8 @@ const userRegisterValidate = (req, res, next) => {
     email: Joi.string().email(),
     birthdate: Joi.string(),
     gender: Joi.string(),
+    role: Joi.string(),
+    active: Joi.boolean(),
     password: Joi.string(),
     confirm_password: Joi.string(),
     heightCm: Joi.string(),

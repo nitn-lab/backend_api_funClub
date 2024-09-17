@@ -10,7 +10,8 @@ const {
   getAdmin,
   forgetPassword,
   getAdminById,
-  getUserById
+  getUserById,
+  updateUsers
 } = require("../controllers/index");
 const {
   userRegisterValidate,
@@ -30,6 +31,8 @@ routes.post("/login", userLoginValidate, loginUser);
 routes.get("/users", ensureAuthenticated, getUsers);
 
 routes.get("/userById/:id", ensureAuthenticated, getUserById)
+
+routes.put("/updateUsers/:id", ensureAuthenticated, updateUsers);
 
 //**ADMIN ROUTES */
 

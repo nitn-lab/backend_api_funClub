@@ -62,7 +62,7 @@ module.exports = {
   //Get All Users
   getUsers: async (req, res) => {
     try {
-      const users = await UserModel.find({}, { password: 0 });
+      const users = await UserModel.find({}, { password: 0 , confirm_password: 0});
       return res.status(200).json({ data: users });
     } catch (err) {
       return res.status(500).json({ message: "error", err });
@@ -78,6 +78,26 @@ module.exports = {
       return res.status(201).json({ message: "success", data: response });
     } catch (err) {
       return res.status(500).json({ message: "error", err });
+    }
+  },
+  //UPDATE USERS
+  updateUsers: async (req, res) => {
+    try {
+      const { id } = req.params;
+      const updatedUser = await UserModel.findByIdAndUpdate(id, req.body);
+
+      if (!updatedUser) {
+        return res.status(404).json({ message: "Not Found" });
+      }
+
+      const user = await UserModel.findById(id).select({
+        password: 0,
+        confirm_password: 0,
+      });
+
+      return res.status(200).json({ data: user });
+    } catch (error) {
+      return res.status(500).json({ message: "error", error });
     }
   },
   //LOGIN ADMIN
@@ -179,11 +199,9 @@ module.exports = {
   // GET USER BY ID
   getUserById: async (req, res) => {
     try {
-      const user = await UserModel
-        .findOne({
-          _id: new Object(req.params.id),
-        })
-        .select({ password: 0 });
+      const user = await UserModel.findOne({
+        _id: new Object(req.params.id),
+      }).select({ password: 0 });
       // console.log("adminId", admin);
       return res.status(200).json({ data: user });
     } catch (error) {
