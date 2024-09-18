@@ -11,7 +11,8 @@ const {
   forgetPassword,
   getAdminById,
   getUserById,
-  updateUsers
+  updateUsers,
+  deleteUser
 } = require("../controllers/index");
 const {
   userRegisterValidate,
@@ -26,7 +27,7 @@ const { ensureAuthenticated } = require("../utils/auth");
 
 routes.post("/register", userRegisterValidate, registerUser);
 
-routes.post("/login", userLoginValidate, loginUser);
+routes.post("/login", userLoginValidate, loginUser)
 
 routes.get("/users", ensureAuthenticated, getUsers);
 
@@ -47,4 +48,6 @@ routes.get("/adminById/:id", ensureAuthenticated, getAdminById);
 //** COMMOM ROUTE */
 
 routes.post("/passwordReset", forgetPassword)
+
+routes.delete("/delete/:id", ensureAuthenticated, deleteUser);
 module.exports = routes;

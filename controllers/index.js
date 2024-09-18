@@ -1,4 +1,5 @@
 //! ALL BUSINESS LOGIC
+const mongoose = require("mongoose");
 const UserModel = require("../models/usersModel");
 const AdminSchema = require("../models/adminModel");
 const bcrypt = require("bcrypt");
@@ -62,7 +63,10 @@ module.exports = {
   //Get All Users
   getUsers: async (req, res) => {
     try {
-      const users = await UserModel.find({}, { password: 0 , confirm_password: 0});
+      const users = await UserModel.find(
+        {},
+        { password: 0, confirm_password: 0 }
+      );
       return res.status(200).json({ data: users });
     } catch (err) {
       return res.status(500).json({ message: "error", err });
@@ -205,7 +209,36 @@ module.exports = {
       // console.log("adminId", admin);
       return res.status(200).json({ data: user });
     } catch (error) {
-      return res.status(500).json({ message: "error", err });
+      return res.status(500).json({ message: "error", error });
+    }
+  },
+  // DELETE USERS / ADMINS
+  deleteUser: async (req, res) => {
+    // Check if the provided ID is a valid ObjectId
+    if (!mongoose.Types.ObjectId.isValid(req.params.id)) {
+      return res.status(400).json({
+        message: "Invalid ID format",
+        error: {
+          value: req.params.id,
+          reason: "Must be a valid ObjectId",
+        },
+      });
+    }
+    try {
+      // const { id } = req.params;
+      console.log("deleteUser", req.params.id);
+      const user = await UserModel.findByIdAndDelete(req.params.id);
+      console.log("user", user);
+      const admin = await adminModel.findByIdAndDelete({
+        _id: new Object(req.params.id),
+      });
+      console.log("admin", admin);
+      if (user == null && admin == null) {
+        return res.status(401).json({ message: "Id Not found" });
+      }
+      return res.status(201).json({ message: "Deleted Successfully" });
+    } catch (error) {
+      return res.status(500).json({ message: "error", error });
     }
   },
 };
