@@ -2,6 +2,7 @@
 const mongoose = require("mongoose");
 const UserModel = require("../models/usersModel");
 const AdminSchema = require("../models/adminModel");
+const PromptSchema = require("../models/promptModel");
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 const adminModel = require("../models/adminModel");
@@ -25,6 +26,7 @@ module.exports = {
       return res.status(500).json({ message: "error", err });
     }
   },
+
   // check user using email
   // compare password
   // create jwt token
@@ -60,6 +62,7 @@ module.exports = {
       return res.status(500).json({ message: "error", err });
     }
   },
+
   //Get All Users
   getUsers: async (req, res) => {
     try {
@@ -72,6 +75,7 @@ module.exports = {
       return res.status(500).json({ message: "error", err });
     }
   },
+
   // Register Admin
   registerAdmin: async (req, res) => {
     const adminModel = new AdminSchema(req.body);
@@ -212,6 +216,7 @@ module.exports = {
       return res.status(500).json({ message: "error", error });
     }
   },
+
   // DELETE USERS / ADMINS
   deleteUser: async (req, res) => {
     // Check if the provided ID is a valid ObjectId
@@ -237,6 +242,53 @@ module.exports = {
         return res.status(401).json({ message: "Id Not found" });
       }
       return res.status(201).json({ message: "Deleted Successfully" });
+    } catch (error) {
+      return res.status(500).json({ message: "error", error });
+    }
+  },
+
+  // ADD QUESTIONS - PROMPT
+  addPromptQuestions: async (req, res) => {
+    const prompt = new PromptSchema(req.body);
+    try {
+      const response = await prompt.save();
+      return res.status(201).json({ message: "success", data: response });
+    } catch (error) {
+      return res.status(500).json({ message: "error", error });
+    }
+  },
+
+  //GET ALL QUESTIONS
+  getPromptQuestions: async (req, res) => {
+    try {
+      const ques = await PromptSchema.find({});
+      return res.status(200).json({ message: ques });
+    } catch (error) {
+      return res.status(500).json({ message: "error", error });
+    }
+  },
+
+  // DELETE MULTIPLE QUESTION
+  deleteQuestion: async (req, res) => {
+    const { ids } = req.body; // Expecting an array of user IDs
+
+    // Basic validation
+    if (!Array.isArray(ids) || ids.length === 0) {
+      return res.status(400).json({
+        message: "Invalid request, please provide an array of ques. IDs",
+      });
+    }
+
+    try {
+      const result = await PromptSchema.deleteMany({ _id: { $in: ids } });
+
+      if (result.deletedCount === 0) {
+        return res.status(404).json({ message: "No questions found to delete" });
+      }
+
+      return res.status(200).json({
+        message: `${result.deletedCount} questions deleted successfully`,
+      });
     } catch (error) {
       return res.status(500).json({ message: "error", error });
     }
