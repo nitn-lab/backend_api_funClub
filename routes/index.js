@@ -15,7 +15,8 @@ const {
   deleteUser,
   addPromptQuestions,
   getPromptQuestions,
-  deleteQuestion
+  deleteQuestion,
+  addInterests
 } = require("../controllers/index");
 const {
   userRegisterValidate,
@@ -49,9 +50,13 @@ routes.get("/adminById/:id", ensureAuthenticated, getAdminById);
 
 routes.post("/addPromptQuestions", ensureAuthenticated, addPromptQuestions);
 
-routes.get("/getPromptQues", ensureAuthenticated, getPromptQuestions);
+routes.get("/getPromptQues", getPromptQuestions);
 
-routes.delete("/deleteQues", ensureAuthenticated, deleteQuestion)
+routes.delete("/deleteQues", ensureAuthenticated, deleteQuestion);
+
+// routes.post("/interests", ensureAuthenticated, addInterests);
+
+// routes.get("/getInterests", ensureAuthenticated, )
 
 //** COMMOM ROUTE */
 

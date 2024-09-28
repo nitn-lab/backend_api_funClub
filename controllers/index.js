@@ -283,7 +283,9 @@ module.exports = {
       const result = await PromptSchema.deleteMany({ _id: { $in: ids } });
 
       if (result.deletedCount === 0) {
-        return res.status(404).json({ message: "No questions found to delete" });
+        return res
+          .status(404)
+          .json({ message: "No questions found to delete" });
       }
 
       return res.status(200).json({

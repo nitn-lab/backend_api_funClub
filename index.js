@@ -5,15 +5,13 @@ const app = express();
 
 const routes = require("./routes/index");
 const bodyParser = require("body-parser");
-// require("dotenv").config();
-// require('dotenv').config({ path: '.env.dev' })
+
 require("./config/DataBase");
 app.use(cors());
 app.use(bodyParser.json());
 app.use("/api/v1", routes); //! USING API VERSION - 1
 
 const User = require("./models/usersModel");
-// const Admin  = require("./models/adminModel");
 
 // To start the server and listen to that port
 // console.log("dot", process.env)

@@ -129,7 +129,8 @@ const UserSchema = new mongoose.Schema(
       // maxlength: 255,
     },
     prompt_question: {
-      type: String,
+      type: Array,
+      default: [{}],
     },
   },
   { timestamps: true }

@@ -33,8 +33,8 @@ const userRegisterValidate = (req, res, next) => {
     sexual_orientation: Joi.string(),
     personality: Joi.string(),
     interest_details: Joi.array(),
-    looking_for: Joi.array(),
-    prompt_question: Joi.string(),
+    looking_for: Joi.array().allow("").allow(null),
+    prompt_question: Joi.array().allow("").allow(null),
   });
   const { error, value } = schema.validate(req.body);
   if (error) {
