@@ -89,6 +89,7 @@ module.exports = {
       return res.status(500).json({ message: "error", err });
     }
   },
+  
   //UPDATE USERS
   updateUsers: async (req, res) => {
     try {
@@ -109,6 +110,7 @@ module.exports = {
       return res.status(500).json({ message: "error", error });
     }
   },
+
   //LOGIN ADMIN
   loginAdmin: async (req, res) => {
     try {
@@ -186,7 +188,7 @@ module.exports = {
           .json({ message: "admin password reset success", data: response });
       }
     } catch (error) {
-      return res.status(500).json({ message: "error", err });
+      return res.status(500).json({ message: "error", error });
     }
   },
 
@@ -201,7 +203,7 @@ module.exports = {
       // console.log("adminId", admin);
       return res.status(200).json({ data: admin });
     } catch (error) {
-      return res.status(500).json({ message: "error", err });
+      return res.status(500).json({ message: "error", error });
     }
   },
 
@@ -373,7 +375,9 @@ module.exports = {
       }).populate("following");
       console.log("user", user.following);
       const followingPosts = await PostSchema.findOne({
-        createdBy: { $in: user.following.map(followingId => new Object(followingId)) },
+        createdBy: {
+          $in: user.following.map((followingId) => new Object(followingId)),
+        },
       });
       console.log("followingPosts", followingPosts);
       return res.status(200).json({ data: followingPosts });
