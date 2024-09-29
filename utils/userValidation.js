@@ -35,6 +35,9 @@ const userRegisterValidate = (req, res, next) => {
     interest_details: Joi.array(),
     looking_for: Joi.array().allow("").allow(null),
     prompt_question: Joi.array().allow("").allow(null),
+    followers: Joi.array().allow("").allow(null),
+    following: Joi.array().allow("").allow(null),
+    posts: Joi.array().allow("").allow(null),
   });
   const { error, value } = schema.validate(req.body);
   if (error) {

@@ -16,7 +16,13 @@ const {
   addPromptQuestions,
   getPromptQuestions,
   deleteQuestion,
-  addInterests
+  addInterests,
+  createPost,
+  likePost,
+  savePost,
+  followingPosts,
+  followUser,
+  unfollowUser
 } = require("../controllers/index");
 const {
   userRegisterValidate,
@@ -63,4 +69,25 @@ routes.delete("/deleteQues", ensureAuthenticated, deleteQuestion);
 routes.post("/passwordReset", forgetPassword);
 
 routes.delete("/delete/:id", ensureAuthenticated, deleteUser);
+
+
+//**POSTS ROUTES */
+
+//Create New Post
+routes.post('/create', ensureAuthenticated, createPost);
+
+//Like the Post
+routes.put('/like/:id', ensureAuthenticated, likePost);
+
+//Save the post
+routes.put('/save/:id', ensureAuthenticated, savePost);
+
+//Get Post From Followed Users
+routes.get('/following', ensureAuthenticated, followingPosts);
+
+// Follow
+routes.put('/follow/:id', ensureAuthenticated, followUser);
+
+//Unfollow
+routes.put('/unfollow/:id', ensureAuthenticated, unfollowUser);
 module.exports = routes;

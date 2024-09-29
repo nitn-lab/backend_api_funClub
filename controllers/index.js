@@ -3,6 +3,7 @@ const mongoose = require("mongoose");
 const UserModel = require("../models/usersModel");
 const AdminSchema = require("../models/adminModel");
 const PromptSchema = require("../models/promptModel");
+const PostSchema = require("../models/postModel");
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 const adminModel = require("../models/adminModel");
@@ -290,6 +291,199 @@ module.exports = {
 
       return res.status(200).json({
         message: `${result.deletedCount} questions deleted successfully`,
+      });
+    } catch (error) {
+      return res.status(500).json({ message: "error", error });
+    }
+  },
+
+  //CREATE POST
+  //!! i have to add validations and security vernabilities for the apis
+  createPost: async (req, res) => {
+    const { content, image } = req.body;
+    const newPost = new PostSchema(req.body);
+    try {
+      const response = await newPost.save();
+      return res.status(201).json({ message: "success", data: response });
+    } catch (error) {
+      return res.status(500).json({ message: "error", error });
+    }
+  },
+
+  // LIKE POST
+  likePost: async (req, res) => {
+    try {
+      const post = await PostSchema.findOne({
+        _id: new Object(req.params.id),
+      });
+      if (!post) {
+        return res.status(404).json({ message: "Post not found" });
+      }
+
+      // Ensure the 'likes' field is an array
+      if (!Array.isArray(post.likes)) {
+        post.likes = []; // Initialize it as an empty array if not present
+      }
+      // Convert ObjectIds in the likes array to strings for comparison
+      const likesArrayAsStrings = post.likes.map((like) => like.toString());
+
+      //if the user haven't liked post before , then like the post of the user
+      if (!likesArrayAsStrings.includes(req.user._id.toString())) {
+        post?.likes?.push(req.user._id); // Add the user's ID to the 'likes' array
+        await post.save(); // Save the updated post in the database
+      }
+      return res.status(200).json({ data: post });
+    } catch (error) {
+      return res.status(500).json({ message: "error", error });
+    }
+  },
+
+  //SAVE POST
+  savePost: async (req, res) => {
+    try {
+      const post = await PostSchema.findOne({
+        _id: new Object(req.params.id),
+      });
+      if (!post) {
+        return res.status(404).json({ message: "Post not found" });
+      }
+      // Ensure the 'likes' field is an array
+      if (!Array.isArray(post.saves)) {
+        post.saves = []; // Initialize it as an empty array if not present
+      }
+      const saveArrayAsStrings = post.saves.map((save) => save.toString());
+
+      // //if the user haven't seved post before , then save the post of the user
+      if (!saveArrayAsStrings.includes(req.user._id.toString())) {
+        console.log("User added to likes");
+        post?.saves?.push(req.user._id);
+        await post.save();
+      }
+      return res.status(200).json({ data: post });
+    } catch (error) {
+      return res.status(500).json({ message: "error", error });
+    }
+  },
+
+  //GET POSTS FROM FLOWWED USERS
+  followingPosts: async (req, res) => {
+    try {
+      const user = await UserModel.findOne({
+        _id: new Object(req.user._id),
+      }).populate("following");
+      console.log("user", user.following);
+      const followingPosts = await PostSchema.findOne({
+        createdBy: { $in: user.following.map(followingId => new Object(followingId)) },
+      });
+      console.log("followingPosts", followingPosts);
+      return res.status(200).json({ data: followingPosts });
+    } catch (error) {
+      return res.status(500).json({ message: "error", error });
+    }
+  },
+
+  //FOLLOW
+  followUser: async (req, res) => {
+    try {
+      const currentUserId = req.user._id; // Get the logged-in user's ID from auth middleware
+      const targetUserId = req.params.id; // Get the target user's ID from route params
+
+      // Check if the user is trying to follow themselves
+      if (currentUserId === targetUserId) {
+        return res.status(400).json({ message: "You can't follow yourself" });
+      }
+
+      // Find the logged-in user
+      const currentUser = await UserModel.findOne(
+        {
+          _id: new Object(req.user._id),
+        },
+        { password: 0, confirm_password: 0 }
+      );
+      const targetUser = await UserModel.findOne(
+        {
+          _id: new Object(req.params.id),
+        },
+        { password: 0, confirm_password: 0 }
+      );
+
+      // Check if both users exist
+      if (!currentUser || !targetUser) {
+        return res.status(404).json({ message: "User not found" });
+      }
+
+      const userArrayAsString = currentUser.following.map((user) =>
+        user.toString()
+      );
+
+      // Add the target user to the following array if not already followed
+      if (!userArrayAsString.includes(targetUserId.toString())) {
+        currentUser.following.push(targetUserId);
+        await currentUser.save();
+      }
+      const userTarArrayAsString = targetUser.followers.map((user) =>
+        user.toString()
+      );
+
+      // Add the current user to the target user's followers array if not already a follower
+      if (!userTarArrayAsString.includes(currentUserId.toString())) {
+        targetUser.followers.push(currentUserId);
+        await targetUser.save();
+      }
+      return res.status(200).json({
+        message: "User followed successfully",
+        currentUser,
+        targetUser,
+      });
+    } catch (error) {
+      return res.status(500).json({ message: "error", error });
+    }
+  },
+
+  //UNFOLLOW
+  unfollowUser: async (req, res) => {
+    try {
+      const currentUserId = req.user._id;
+      const targetUserId = req.params.id;
+
+      // Check if the user is trying to unfollow themselves
+      if (currentUserId === targetUserId) {
+        return res.status(400).json({ message: "You can't unfollow yourself" });
+      }
+
+      // Find the logged-in user and the target user
+      const currentUser = await UserModel.findOne(
+        {
+          _id: new Object(req.user._id),
+        },
+        { password: 0, confirm_password: 0 }
+      );
+      const targetUser = await UserModel.findOne(
+        {
+          _id: new Object(req.params.id),
+        },
+        { password: 0, confirm_password: 0 }
+      );
+
+      if (!currentUser || !targetUser) {
+        return res.status(404).json({ message: "User not found" });
+      }
+
+      // Remove the target user from the following array
+      currentUser.following = currentUser.following.filter(
+        (followingId) => followingId.toString() !== targetUserId
+      );
+      await currentUser.save();
+
+      // Remove the current user from the target user's followers array
+      targetUser.followers = targetUser.followers.filter(
+        (followerId) => followerId.toString() !== currentUserId
+      );
+      await targetUser.save();
+      return res.status(200).json({
+        message: "User Unfollowed successfully",
+        currentUser,
+        targetUser,
       });
     } catch (error) {
       return res.status(500).json({ message: "error", error });
