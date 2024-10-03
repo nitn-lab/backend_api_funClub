@@ -132,6 +132,9 @@ const UserSchema = new mongoose.Schema(
       type: Array,
       default: [{}],
     },
+    bio:{
+      type: String
+    },
     profileImage: {
       type: String,
       default: '', // Default value can be an empty string or a default image URL

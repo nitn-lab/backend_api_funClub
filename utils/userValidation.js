@@ -35,6 +35,7 @@ const userRegisterValidate = (req, res, next) => {
     interest_details: Joi.array(),
     looking_for: Joi.array().allow("").allow(null),
     prompt_question: Joi.array().allow("").allow(null),
+    bio: Joi.string().allow("").allow(null),
     profileImage: Joi.string().allow("").allow(null),
     followers: Joi.array().allow("").allow(null),
     following: Joi.array().allow("").allow(null),
