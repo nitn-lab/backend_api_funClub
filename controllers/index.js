@@ -17,17 +17,25 @@ module.exports = {
 
   //! REGISTER OPERATION
   registerUser: async (req, res) => {
-    const userModel = new UserModel(req.body);
-    userModel.password = await bcrypt.hash(req.body.password, 10);
     try {
-      const response = await userModel.save();
-      response.password = undefined;
+      // Check if email already exists
+      const existingUser = await UserModel.findOne({ email: req.body.email });
+      if (existingUser) {
+        return res.status(400).json({ message: "Email already exists" });
+      }
+
+      // If email doesn't exist, proceed to create the user
+      const userModel = new UserModel(req.body);
+      userModel.password = await bcrypt.hash(req.body.password, 10); // Hash the password
+
+      const response = await userModel.save(); // Save the user
+      response.password = undefined; // Exclude password from response
+
       return res.status(201).json({ message: "success", data: response });
     } catch (err) {
       return res.status(500).json({ message: "error", err });
     }
   },
-
   // check user using email
   // compare password
   // create jwt token
@@ -89,7 +97,7 @@ module.exports = {
       return res.status(500).json({ message: "error", err });
     }
   },
-  
+
   //UPDATE USERS
   updateUsers: async (req, res) => {
     try {
@@ -301,14 +309,55 @@ module.exports = {
 
   //CREATE POST
   //!! i have to add validations and security vernabilities for the apis
+
   createPost: async (req, res) => {
-    const { content, image } = req.body;
-    const newPost = new PostSchema(req.body);
     try {
-      const response = await newPost.save();
-      return res.status(201).json({ message: "success", data: response });
+      // Ensure the user is authenticated and the user ID is available
+      if (!req.user || !req.user._id) {
+        return res
+          .status(401)
+          .json({ message: "Unauthorized: User ID is missing" });
+      }
+
+      const { content, image } = req.body;
+
+      // Validate content and image fields (basic check, you can use Joi for advanced validation)
+      if (!content && !image) {
+        return res
+          .status(400)
+          .json({ message: "Either content or image is required" });
+      }
+
+      // Create a new post object with the authenticated user's ID
+      const newPost = new PostSchema({
+        content,
+        image,
+        createdBy: req.user.id, // Assuming req.user contains the authenticated user ID
+      });
+
+      // Save the post to the database
+      const savedPost = await newPost.save();
+
+      // Find the user and push the new post's ID into their posts array
+      const user = await UserModel.findById(req.user._id);
+
+      if (!user) {
+        return res.status(404).json({ message: "User not found" });
+      }
+
+      user.posts.push(savedPost._id); // Push the post ID into the user's posts array
+      await user.save();
+
+      // Return the success response with the saved post
+      return res
+        .status(201)
+        .json({ message: "Post created successfully", data: savedPost });
     } catch (error) {
-      return res.status(500).json({ message: "error", error });
+      // Handle any errors (e.g., database errors)
+      console.error("Error creating post:", error);
+      return res
+        .status(500)
+        .json({ message: "An error occurred while creating the post", error });
     }
   },
 

@@ -24,6 +24,7 @@ const {
   followUser,
   unfollowUser
 } = require("../controllers/index");
+const { generateToken } = require("../controllers/tokenController");
 const {
   userRegisterValidate,
   userLoginValidate,
@@ -90,4 +91,6 @@ routes.put('/follow/:id', ensureAuthenticated, followUser);
 
 //Unfollow
 routes.put('/unfollow/:id', ensureAuthenticated, unfollowUser);
+
+routes.get('/generate-token', generateToken);
 module.exports = routes;

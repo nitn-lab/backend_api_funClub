@@ -1,8 +1,9 @@
 // Creating the server using express
 const express = require("express");
-var cors = require('cors')
+var cors = require('cors');
+const http = require("http"); 
 const app = express();
-
+const {setupWebSocketServer} = require('./services/websocketService')
 const routes = require("./routes/index");
 const bodyParser = require("body-parser");
 
@@ -12,6 +13,13 @@ app.use(bodyParser.json());
 app.use("/api/v1", routes); //! USING API VERSION - 1
 
 const User = require("./models/usersModel");
+
+
+// Create HTTP server using Express app
+const server = http.createServer(app);
+
+// Initialize WebSocket server
+setupWebSocketServer(server); // Pass HTTP server to WebSocket initializer
 
 // To start the server and listen to that port
 // console.log("dot", process.env)

@@ -132,6 +132,10 @@ const UserSchema = new mongoose.Schema(
       type: Array,
       default: [{}],
     },
+    profileImage: {
+      type: String,
+      default: '', // Default value can be an empty string or a default image URL
+    },
     followers: [{ type: mongoose.Schema.Types.ObjectId, ref: 'User' }],
     following: [{type: mongoose.Schema.Types.ObjectId, ref: 'User'}],
     posts: [{type: mongoose.Schema.Types.ObjectId, ref: 'Post'}]
