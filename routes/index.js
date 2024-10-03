@@ -18,6 +18,7 @@ const {
   deleteQuestion,
   addInterests,
   createPost,
+  getPostsByUserId,
   likePost,
   savePost,
   followingPosts,
@@ -76,6 +77,9 @@ routes.delete("/delete/:id", ensureAuthenticated, deleteUser);
 
 //Create New Post
 routes.post('/create', ensureAuthenticated, createPost);
+
+//Get Post By User:Id
+routes.get('/user/:id/posts', ensureAuthenticated, getPostsByUserId)
 
 //Like the Post
 routes.put('/like/:id', ensureAuthenticated, likePost);

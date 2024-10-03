@@ -332,7 +332,7 @@ module.exports = {
       const newPost = new PostSchema({
         content,
         image,
-        createdBy: req.user.id, // Assuming req.user contains the authenticated user ID
+        createdBy: req.user._id, // Assuming req.user contains the authenticated user ID
       });
 
       // Save the post to the database
@@ -358,6 +358,46 @@ module.exports = {
       return res
         .status(500)
         .json({ message: "An error occurred while creating the post", error });
+    }
+  },
+
+  // GET ALL POSTS BY USER:_ID
+
+  getPostsByUserId: async (req, res) => {
+    try {
+      const userId = req.params.id;
+      // console.log("userId", userId);
+      // Validate if the user exists
+      const user = await UserModel.findOne({
+        _id: new Object(req.params.id),
+      });
+      // console.log("user", user);
+      if (!user) {
+        return res.status(404).json({ message: "User not found" });
+      }
+
+      // Find all posts created by the user
+      const posts = await PostSchema.find({
+        createdBy: userId, // Filter by user ID
+      })
+      .populate("createdBy", "username email") // Populate creator's info if needed
+      .exec();
+      // console.log("posts", posts);
+
+      // If no posts are found, return an empty array
+      if (!posts.length) {
+        return res
+          .status(200)
+          .json({ message: "No posts found for this user", data: [] });
+      }
+
+      // Return the list of posts
+      return res.status(200).json({ message: "success", data: posts });
+    } catch (error) {
+      console.error("Error fetching posts by user:", error);
+      return res
+        .status(500)
+        .json({ message: "An error occurred while fetching posts", error });
     }
   },
 
