@@ -13,7 +13,7 @@ app.use(bodyParser.json());
 app.use("/api/v1", routes); //! USING API VERSION - 1
 
 const User = require("./models/usersModel");
-
+app.use('/uploads', express.static('uploads'));
 
 // Create HTTP server using Express app
 const server = http.createServer(app);

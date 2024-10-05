@@ -4,6 +4,7 @@ const UserModel = require("../models/usersModel");
 const AdminSchema = require("../models/adminModel");
 const PromptSchema = require("../models/promptModel");
 const PostSchema = require("../models/postModel");
+const MessageSchema = require("../models/messageModel");
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 const adminModel = require("../models/adminModel");
@@ -366,12 +367,10 @@ module.exports = {
   getPostsByUserId: async (req, res) => {
     try {
       const userId = req.params.id;
-      // console.log("userId", userId);
       // Validate if the user exists
       const user = await UserModel.findOne({
         _id: new Object(req.params.id),
       });
-      // console.log("user", user);
       if (!user) {
         return res.status(404).json({ message: "User not found" });
       }
@@ -380,9 +379,8 @@ module.exports = {
       const posts = await PostSchema.find({
         createdBy: userId, // Filter by user ID
       })
-      .populate("createdBy", "username email") // Populate creator's info if needed
-      .exec();
-      // console.log("posts", posts);
+        .populate("createdBy", "username email") // Populate creator's info if needed
+        .exec();
 
       // If no posts are found, return an empty array
       if (!posts.length) {
@@ -580,6 +578,37 @@ module.exports = {
       });
     } catch (error) {
       return res.status(500).json({ message: "error", error });
+    }
+  },
+
+  //CHAT HISTORY
+  getChatHistory: async (req, res) => {
+    try {
+      const { token, userId2 } = req.body;
+      const userId = req.user._id;
+      // Validate if the user exists
+      const user = await UserModel.findOne({
+        _id: new Object(req.user._id),
+      });
+      if (!user) {
+        return res.status(404).json({ message: "User not found" });
+      }
+      const Chats = await MessageSchema.find({
+        $or: [
+          { from: req.user._id, to: userId2 },
+          { from: userId2, to: req.user._id },
+        ],
+      }).sort({ timestamp: 1 });
+
+      const savedChats = await Chats.save();
+
+      return res
+        .status(201)
+        .json({ message: "Post created successfully", data: savedChats });
+    } catch (error) {
+      return res
+        .status(500)
+        .json({ message: "An error occurred while fetching the chats", error });
     }
   },
 };

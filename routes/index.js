@@ -23,9 +23,12 @@ const {
   savePost,
   followingPosts,
   followUser,
-  unfollowUser
+  unfollowUser,
+  getChatHistory
 } = require("../controllers/index");
 const { generateToken } = require("../controllers/tokenController");
+const profileController = require('../controllers/profileController');
+const uploadMiddleware = require('../utils/uploadMiddleware');
 const {
   userRegisterValidate,
   userLoginValidate,
@@ -72,29 +75,34 @@ routes.post("/passwordReset", forgetPassword);
 
 routes.delete("/delete/:id", ensureAuthenticated, deleteUser);
 
-
 //**POSTS ROUTES */
 
 //Create New Post
-routes.post('/create', ensureAuthenticated, createPost);
+routes.post("/create", ensureAuthenticated, createPost);
 
 //Get Post By User:Id
-routes.get('/user/:id/posts', ensureAuthenticated, getPostsByUserId)
+routes.get("/user/:id/posts", ensureAuthenticated, getPostsByUserId);
 
 //Like the Post
-routes.put('/like/:id', ensureAuthenticated, likePost);
+routes.put("/like/:id", ensureAuthenticated, likePost);
 
 //Save the post
-routes.put('/save/:id', ensureAuthenticated, savePost);
+routes.put("/save/:id", ensureAuthenticated, savePost);
 
 //Get Post From Followed Users
-routes.get('/following', ensureAuthenticated, followingPosts);
+routes.get("/following", ensureAuthenticated, followingPosts);
 
 // Follow
-routes.put('/follow/:id', ensureAuthenticated, followUser);
+routes.put("/follow/:id", ensureAuthenticated, followUser);
 
 //Unfollow
-routes.put('/unfollow/:id', ensureAuthenticated, unfollowUser);
+routes.put("/unfollow/:id", ensureAuthenticated, unfollowUser);
 
-routes.get('/generate-token', generateToken);
+routes.get("/generate-token", generateToken);
+
+//Chat History
+routes.post("/chatHistory", ensureAuthenticated, getChatHistory);
+
+
+routes.post('/upload/profile-image', uploadMiddleware.single('profileImage'), profileController.uploadProfileImage);
 module.exports = routes;
