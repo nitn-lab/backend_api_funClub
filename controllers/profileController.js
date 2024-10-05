@@ -7,6 +7,6 @@ exports.uploadProfileImage = (req, res) => {
   }
 
   // Generate URL to access the uploaded file
-  const imageUrl = `${req.protocol}://${req.get('host')}/uploads/${req.file.filename}`;
+  const imageUrl = `${req.protocol}://backendapifunclub.yourwebstore.org.in/uploads/${req.file.filename}`;
   res.status(200).json({ message: 'Image uploaded successfully', imageUrl });
 };
