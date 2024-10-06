@@ -15,7 +15,7 @@ const storage = multer.diskStorage({
 // Multer configuration for file uploads with file type and size validation
 const upload = multer({
   storage: storage,
-  limits: { fileSize: 2 * 1024 * 1024 }, // 2MB limit
+  limits: { fileSize: 5 * 1024 * 1024 }, // 2MB limit
   fileFilter: (req, file, cb) => {
     const fileTypes = /jpeg|jpg|png/;
     const mimetype = fileTypes.test(file.mimetype);

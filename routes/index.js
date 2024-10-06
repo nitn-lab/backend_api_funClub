@@ -24,11 +24,11 @@ const {
   followingPosts,
   followUser,
   unfollowUser,
-  getChatHistory
+  getChatHistory,
 } = require("../controllers/index");
 const { generateToken } = require("../controllers/tokenController");
-const profileController = require('../controllers/profileController');
-const uploadMiddleware = require('../utils/uploadMiddleware');
+const profileController = require("../controllers/profileController");
+const uploadMiddleware = require("../utils/uploadMiddleware");
 const {
   userRegisterValidate,
   userLoginValidate,
@@ -103,6 +103,10 @@ routes.get("/generate-token", generateToken);
 //Chat History
 routes.post("/chatHistory", ensureAuthenticated, getChatHistory);
 
-
-routes.post('/upload/profile-image', uploadMiddleware.single('profileImage'), profileController.uploadProfileImage);
+routes.post(
+  "/upload/profile-image",
+  ensureAuthenticated,
+  uploadMiddleware.single("profileImage"),
+  profileController.uploadProfileImage
+);
 module.exports = routes;
