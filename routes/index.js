@@ -92,6 +92,8 @@ routes.post(
 //Get Post By User:Id
 routes.get("/user/:id/posts", ensureAuthenticated, getPostsByUserId);
 
+
+
 //Like the Post
 routes.put("/like/:id", ensureAuthenticated, likePost);
 
