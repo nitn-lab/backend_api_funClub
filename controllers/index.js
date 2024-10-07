@@ -9,6 +9,7 @@ const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 const adminModel = require("../models/adminModel");
 const { request } = require("express");
+const path = require("path");
 module.exports = {
   // validate req.body - Done
   // create MongoDB UserModel - Done
@@ -310,57 +311,112 @@ module.exports = {
 
   //CREATE POST
   //!! i have to add validations and security vernabilities for the apis
+ 
 
   createPost: async (req, res) => {
-    try {
-      // Ensure the user is authenticated and the user ID is available
-      if (!req.user || !req.user._id) {
-        return res
-          .status(401)
-          .json({ message: "Unauthorized: User ID is missing" });
+      try {
+          // Ensure the user is authenticated and the user ID is available
+          if (!req.user || !req.user._id) {
+              return res.status(401).json({ message: "Unauthorized: User ID is missing" });
+          }
+  
+          const { content } = req.body;
+  
+          // Check if files are present in the request
+          const image = req.files ? req.files.image : null; // Assuming image is sent as 'image'
+          const video = req.files ? req.files.video : null; // Assuming video is sent as 'video'
+  
+          if (!content && !image && !video) {
+              return res.status(400).json({ message: "Either content, image, or video is required" });
+          }
+  
+          // Create a new post object with the authenticated user's ID
+          const newPost = new PostSchema({
+              content,
+              image: image ? `/uploads/postImages/${image[0].filename}` : null, // Store the image path if present
+              video: video ? `/uploads/postVideos/${video[0].filename}` : null, // Store the video path if present
+              createdBy: req.user._id, // Assuming req.user contains the authenticated user ID
+          });
+  
+          // Save the post to the database
+          const savedPost = await newPost.save();
+  
+          // Find the user and push the new post's ID into their posts array
+          const user = await UserModel.findById(req.user._id);
+  
+          if (!user) {
+              return res.status(404).json({ message: "User not found" });
+          }
+  
+          user.posts.push(savedPost._id); // Push the post ID into the user's posts array
+          await user.save();
+  
+          // Construct the image and video URLs based on where they're hosted
+          const postWithMediaUrls = {
+              ...savedPost.toObject(),
+              image: image ? `${req.protocol}://backendapifunclub.yourwebstore.org.in/uploads/postImages/${image[0].filename}` : null,
+              video: video ? `${req.protocol}://backendapifunclub.yourwebstore.org.in/uploads/postVideos/${video[0].filename}` : null,
+          };
+  
+          // Return the success response with the saved post, image, and video URLs
+          return res.status(201).json({ message: "Post created successfully", data: postWithMediaUrls });
+      } catch (error) {
+          // Handle any errors (e.g., database errors)
+          console.error("Error creating post:", error);
+          return res.status(500).json({ message: "An error occurred while creating the post", error });
       }
-
-      const { content, image } = req.body;
-
-      // Validate content and image fields (basic check, you can use Joi for advanced validation)
-      if (!content && !image) {
-        return res
-          .status(400)
-          .json({ message: "Either content or image is required" });
-      }
-
-      // Create a new post object with the authenticated user's ID
-      const newPost = new PostSchema({
-        content,
-        image,
-        createdBy: req.user._id, // Assuming req.user contains the authenticated user ID
-      });
-
-      // Save the post to the database
-      const savedPost = await newPost.save();
-
-      // Find the user and push the new post's ID into their posts array
-      const user = await UserModel.findById(req.user._id);
-
-      if (!user) {
-        return res.status(404).json({ message: "User not found" });
-      }
-
-      user.posts.push(savedPost._id); // Push the post ID into the user's posts array
-      await user.save();
-
-      // Return the success response with the saved post
-      return res
-        .status(201)
-        .json({ message: "Post created successfully", data: savedPost });
-    } catch (error) {
-      // Handle any errors (e.g., database errors)
-      console.error("Error creating post:", error);
-      return res
-        .status(500)
-        .json({ message: "An error occurred while creating the post", error });
-    }
   },
+  
+  // createPost: async (req, res) => {
+  //   try {
+  //     // Ensure the user is authenticated and the user ID is available
+  //     if (!req.user || !req.user._id) {
+  //       return res
+  //         .status(401)
+  //         .json({ message: "Unauthorized: User ID is missing" });
+  //     }
+
+  //     const { content, image } = req.body;
+
+  //     // Validate content and image fields (basic check, you can use Joi for advanced validation)
+  //     if (!content && !image) {
+  //       return res
+  //         .status(400)
+  //         .json({ message: "Either content or image is required" });
+  //     }
+
+  //     // Create a new post object with the authenticated user's ID
+  //     const newPost = new PostSchema({
+  //       content,
+  //       image,
+  //       createdBy: req.user._id, // Assuming req.user contains the authenticated user ID
+  //     });
+
+  //     // Save the post to the database
+  //     const savedPost = await newPost.save();
+
+  //     // Find the user and push the new post's ID into their posts array
+  //     const user = await UserModel.findById(req.user._id);
+
+  //     if (!user) {
+  //       return res.status(404).json({ message: "User not found" });
+  //     }
+
+  //     user.posts.push(savedPost._id); // Push the post ID into the user's posts array
+  //     await user.save();
+
+  //     // Return the success response with the saved post
+  //     return res
+  //       .status(201)
+  //       .json({ message: "Post created successfully", data: savedPost });
+  //   } catch (error) {
+  //     // Handle any errors (e.g., database errors)
+  //     console.error("Error creating post:", error);
+  //     return res
+  //       .status(500)
+  //       .json({ message: "An error occurred while creating the post", error });
+  //   }
+  // },
 
   // GET ALL POSTS BY USER:_ID
 

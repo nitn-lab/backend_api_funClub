@@ -29,6 +29,7 @@ const {
 const { generateToken } = require("../controllers/tokenController");
 const profileController = require("../controllers/profileController");
 const uploadMiddleware = require("../utils/uploadMiddleware");
+const uploadPostAssetsMiddleware = require("../utils/uploadPostsAssetsMiddleware");
 const {
   userRegisterValidate,
   userLoginValidate,
@@ -78,7 +79,15 @@ routes.delete("/delete/:id", ensureAuthenticated, deleteUser);
 //**POSTS ROUTES */
 
 //Create New Post
-routes.post("/create", ensureAuthenticated, createPost);
+routes.post(
+  "/create",
+  ensureAuthenticated,
+  uploadPostAssetsMiddleware.fields([
+    { name: "image", maxCount: 1 },
+    { name: "video", maxCount: 1 },
+  ]),
+  createPost
+);
 
 //Get Post By User:Id
 routes.get("/user/:id/posts", ensureAuthenticated, getPostsByUserId);
