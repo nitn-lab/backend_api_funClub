@@ -366,12 +366,10 @@ module.exports = {
       };
 
       // Return the success response with the saved post, image, and video URLs
-      return res
-        .status(201)
-        .json({
-          message: "Post created successfully",
-          data: postWithMediaUrls,
-        });
+      return res.status(201).json({
+        message: "Post created successfully",
+        data: postWithMediaUrls,
+      });
     } catch (error) {
       // Handle any errors (e.g., database errors)
       console.error("Error creating post:", error);
@@ -469,7 +467,6 @@ module.exports = {
     }
   },
 
-
   // LIKE POST
   likePost: async (req, res) => {
     try {
@@ -539,6 +536,37 @@ module.exports = {
       });
       console.log("followingPosts", followingPosts);
       return res.status(200).json({ data: followingPosts });
+    } catch (error) {
+      return res.status(500).json({ message: "error", error });
+    }
+  },
+
+  deletePost: async (req, res) => {
+    //Check if the Id is valid?
+    if (!mongoose.Types.ObjectId.isValid(req.params.id)) {
+      return res.status(400).json({
+        message: "Invalid Id Format",
+        error: {
+          value: req.params.id,
+          reason: "Must be a valid ObjectId",
+        },
+      });
+    }
+    try {
+      const post = await PostSchema.findByIdAndDelete({
+        _id: new Object(req.params.id),
+      });
+      if (!post) {
+        return res.status(401).json({ message: "Id Not Found" });
+      }
+
+      // Remove postId from the user's post list
+      await UserModel.updateOne(
+        { _id: post.createdBy }, // Assuming post.createdBy is the user who created the post
+        { $pull: { posts: req.params.id } } // Remove post ID from user's posts array
+      );
+
+      return res.status(201).json({ message: "Deleted Successfully" });
     } catch (error) {
       return res.status(500).json({ message: "error", error });
     }

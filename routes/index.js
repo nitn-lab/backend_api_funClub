@@ -21,6 +21,7 @@ const {
   getPostsByUserId,
   likePost,
   savePost,
+  deletePost,
   followingPosts,
   followUser,
   unfollowUser,
@@ -92,13 +93,14 @@ routes.post(
 //Get Post By User:Id
 routes.get("/user/:id/posts", ensureAuthenticated, getPostsByUserId);
 
-
-
 //Like the Post
 routes.put("/like/:id", ensureAuthenticated, likePost);
 
 //Save the post
 routes.put("/save/:id", ensureAuthenticated, savePost);
+
+// Delete the post
+routes.delete("/deletePost/:id", ensureAuthenticated, deletePost);
 
 //Get Post From Followed Users
 routes.get("/following", ensureAuthenticated, followingPosts);

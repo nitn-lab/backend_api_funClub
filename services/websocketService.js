@@ -6,7 +6,7 @@ let activeCalls = {};
 let activeChats = {};
 
 function setupWebSocketServer(server) {
-  const wss = new WebSocket.Server({ port: 4000 });
+  const wss = new WebSocket.Server({ port: 4000, host: '0.0.0.0' });
   console.log("New WebSocket connection established");
   wss.on("connection", (ws) => {
     // console.log("ws", ws);
