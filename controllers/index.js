@@ -684,11 +684,16 @@ module.exports = {
   getChatHistory: async (req, res) => {
     try {
       const { token, userId2 } = req.body;
+      // console.log("userId2", userId2);
+      // console.log("userId1", req.user._id);
+
       const userId = req.user._id;
       // Validate if the user exists
       const user = await UserModel.findOne({
         _id: new Object(req.user._id),
       });
+
+      // console.log("user found", user);
       if (!user) {
         return res.status(404).json({ message: "User not found" });
       }
@@ -699,11 +704,14 @@ module.exports = {
         ],
       }).sort({ timestamp: 1 });
 
-      const savedChats = await Chats.save();
+      // console.log("Chats", Chats);
+
+      // const savedChats = await Chats.save();
+      // console.log("savedChats", savedChats);
 
       return res
         .status(201)
-        .json({ message: "Post created successfully", data: savedChats });
+        .json({ message: "Chat Fetched successfully", data: Chats });
     } catch (error) {
       return res
         .status(500)

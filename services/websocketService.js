@@ -67,6 +67,7 @@ function setupWebSocketServer(server) {
           JSON.stringify({
             type: "chatMessage",
             from,
+            to,
             message: chatMessage,
             timestamp: new Date(),
           })
