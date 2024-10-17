@@ -244,13 +244,13 @@ module.exports = {
     }
     try {
       // const { id } = req.params;
-      console.log("deleteUser", req.params.id);
+      // console.log("deleteUser", req.params.id);
       const user = await UserModel.findByIdAndDelete(req.params.id);
-      console.log("user", user);
+      // console.log("user", user);
       const admin = await adminModel.findByIdAndDelete({
         _id: new Object(req.params.id),
       });
-      console.log("admin", admin);
+      // console.log("admin", admin);
       if (user == null && admin == null) {
         return res.status(401).json({ message: "Id Not found" });
       }
@@ -379,57 +379,6 @@ module.exports = {
     }
   },
 
-  // createPost: async (req, res) => {
-  //   try {
-  //     // Ensure the user is authenticated and the user ID is available
-  //     if (!req.user || !req.user._id) {
-  //       return res
-  //         .status(401)
-  //         .json({ message: "Unauthorized: User ID is missing" });
-  //     }
-
-  //     const { content, image } = req.body;
-
-  //     // Validate content and image fields (basic check, you can use Joi for advanced validation)
-  //     if (!content && !image) {
-  //       return res
-  //         .status(400)
-  //         .json({ message: "Either content or image is required" });
-  //     }
-
-  //     // Create a new post object with the authenticated user's ID
-  //     const newPost = new PostSchema({
-  //       content,
-  //       image,
-  //       createdBy: req.user._id, // Assuming req.user contains the authenticated user ID
-  //     });
-
-  //     // Save the post to the database
-  //     const savedPost = await newPost.save();
-
-  //     // Find the user and push the new post's ID into their posts array
-  //     const user = await UserModel.findById(req.user._id);
-
-  //     if (!user) {
-  //       return res.status(404).json({ message: "User not found" });
-  //     }
-
-  //     user.posts.push(savedPost._id); // Push the post ID into the user's posts array
-  //     await user.save();
-
-  //     // Return the success response with the saved post
-  //     return res
-  //       .status(201)
-  //       .json({ message: "Post created successfully", data: savedPost });
-  //   } catch (error) {
-  //     // Handle any errors (e.g., database errors)
-  //     console.error("Error creating post:", error);
-  //     return res
-  //       .status(500)
-  //       .json({ message: "An error occurred while creating the post", error });
-  //   }
-  // },
-
   // GET ALL POSTS BY USER:_ID
 
   getPostsByUserId: async (req, res) => {
@@ -448,6 +397,8 @@ module.exports = {
         createdBy: userId, // Filter by user ID
       })
         .populate("createdBy", "username email profileImage") // Populate creator's info if needed
+        .populate("comments.createdBy", "username") // Populate comment user details
+        .populate("comments.replies.createdBy", "username") // Populate reply user details
         .exec();
 
       // If no posts are found, return an empty array
@@ -512,7 +463,7 @@ module.exports = {
 
       // //if the user haven't seved post before , then save the post of the user
       if (!saveArrayAsStrings.includes(req.user._id.toString())) {
-        console.log("User added to likes");
+        // console.log("User added to likes");
         post?.saves?.push(req.user._id);
         await post.save();
       }
@@ -522,19 +473,87 @@ module.exports = {
     }
   },
 
+  //ADD COMMENTS TO POSTS
+  // REF - POST: /posts/:postId/comments
+  addComment: async (req, res) => {
+    try {
+      const { postId } = req.params;
+      const { commentText } = req.body;
+      const userId = req.user._id; // Token authentication
+
+      // Validate commentText
+      if (!commentText) {
+        return res.status(400).json({ message: "Comment text is required" });
+      }
+
+      const post = await PostSchema.findOne({
+        _id: new Object(postId),
+      });
+      if (!post) {
+        return res.status(404).json({ message: "Post not found" });
+      }
+
+      // Add comment to the post
+      const newComment = { commentText, createdBy: userId };
+      post.comments.push(newComment);
+      await post.save();
+
+      return res.status(200).json({ message: "Comment added", post });
+    } catch (error) {
+      return res.status(500).json({ message: "error", error: error });
+    }
+  },
+
+  //REPLIES ON COMMENTS - POSTS
+  // POST: /posts/:postId/comments/:commentId/replies
+  addReply: async (req, res) => {
+    try {
+      const { postId, commentId } = req.params;
+      const { replyText } = req.body;
+      const userId = req.user._id;
+
+      // Validate replyText
+      if (!replyText) {
+        return res.status(400).json({ message: "Reply text is required" });
+      }
+
+      const post = await PostSchema.findOne({
+        _id: new Object(postId),
+      });
+      if (!post) {
+        return res.status(404).json({ message: "Post not found" });
+      }
+      // console.log("comment reply", post);
+      // Find the comment to reply to
+      const comment = post.comments.find((c) => c._id.toString() === commentId);
+      if (!comment) {
+        return res.status(404).json({ message: "Comment not found" });
+      }
+
+      // Add reply to the comment
+      const newReply = { replyText, createdBy: userId };
+      comment.replies.push(newReply);
+      await post.save();
+
+      return res.status(200).json({ message: "Reply added", post });
+    } catch (error) {
+      return res.status(500).json({ message: "Server error", error });
+    }
+  },
+
   //GET POSTS FROM FLOWWED USERS
   followingPosts: async (req, res) => {
     try {
       const user = await UserModel.findOne({
         _id: new Object(req.user._id),
       }).populate("following");
-      console.log("user", user.following);
+      // console.log("user", user.following);
       const followingPosts = await PostSchema.findOne({
         createdBy: {
           $in: user.following.map((followingId) => new Object(followingId)),
         },
       });
-      console.log("followingPosts", followingPosts);
+      // console.log("followingPosts", followingPosts);
       return res.status(200).json({ data: followingPosts });
     } catch (error) {
       return res.status(500).json({ message: "error", error });
@@ -704,11 +723,6 @@ module.exports = {
         ],
       }).sort({ timestamp: 1 });
 
-      // console.log("Chats", Chats);
-
-      // const savedChats = await Chats.save();
-      // console.log("savedChats", savedChats);
-
       return res
         .status(201)
         .json({ message: "Chat Fetched successfully", data: Chats });
@@ -718,4 +732,30 @@ module.exports = {
         .json({ message: "An error occurred while fetching the chats", error });
     }
   },
+
+  // SEARCH USERS
+  search: async (req, res) => {
+    const { query } = req.query;
+    try {
+      let searchQuery = {};
+      
+      // Build the search query dynamically
+      if (query) {
+        searchQuery = {
+          $or: [
+            { username: { $regex: query, $options: 'i' } }, // Case-insensitive search for username
+          ]
+        };
+      }
+  
+      const users = await UserModel.find(searchQuery)
+        .select('username email bio profileImage followers following') // Return only the fields you need
+        .exec();
+      
+      res.status(200).json(users);
+    } catch (err) {
+      console.error(err);
+      res.status(500).json({ message: 'Server error' });
+    }
+  }
 };

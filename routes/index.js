@@ -21,11 +21,14 @@ const {
   getPostsByUserId,
   likePost,
   savePost,
+  addComment,
+  addReply,
   deletePost,
   followingPosts,
   followUser,
   unfollowUser,
   getChatHistory,
+  search
 } = require("../controllers/index");
 const { generateToken } = require("../controllers/tokenController");
 const profileController = require("../controllers/profileController");
@@ -102,6 +105,12 @@ routes.put("/save/:id", ensureAuthenticated, savePost);
 // Delete the post
 routes.delete("/deletePost/:id", ensureAuthenticated, deletePost);
 
+//Add Comments to post
+routes.post("/posts/:postId/comments", ensureAuthenticated, addComment);
+
+// Replies to Comments
+routes.post("/posts/:postId/comments/:commentId/replies", ensureAuthenticated, addReply);
+
 //Get Post From Followed Users
 routes.get("/following", ensureAuthenticated, followingPosts);
 
@@ -122,4 +131,6 @@ routes.post(
   uploadMiddleware.single("profileImage"),
   profileController.uploadProfileImage
 );
+
+routes.get("/search", ensureAuthenticated, search);
 module.exports = routes;
